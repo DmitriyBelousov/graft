@@ -60,11 +60,17 @@ func main() {
 	}()
 
 	http.HandleFunc("/", hello)
-	http.ListenAndServe(":"+port, nil)
+	err = http.ListenAndServe(":"+port, nil)
+	if err != nil {
+		fmt.Println(err)
+	}
 }
 
 func hello(w http.ResponseWriter, req *http.Request) {
 	fmt.Println(req.UserAgent())
 	w.WriteHeader(200)
-	fmt.Fprintf(w, "hello kek")
+	_, err :=fmt.Fprintf(w, "hello kek")
+	if err != nil {
+		fmt.Println(err)
+	}
 }

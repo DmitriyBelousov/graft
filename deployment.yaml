@@ -1,0 +1,81 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ns-kek
+---
+apiVersion: v1
+kind: Deployment
+metadata:
+  name: kek
+  namespace: ns-kek
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: kek
+  template:
+    metadata:
+      name: kek
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '8080'
+        prometheus.io/path: "/metrics"
+      labels:
+        app: nm
+    spec:
+      containers:
+      - name: nm
+        image: dbelousov89/kek-repo:latest
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+#        env:
+#        - name: ENVIRONMENT
+#          value: "dev"
+        resources:
+          requests:
+            memory: "100Mi"
+            cpu: "100m"
+          limits:
+            memory: "100Mi"
+            cpu: "100m"
+        readinessProbe:
+          httpGet:
+            path: "/"
+            port: 8080
+#            httpHeaders:
+#            - name: Content-Type
+#              value: "application/json"
+          initialDelaySeconds: 9
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: "/"
+            port: 8080
+#            httpHeaders:
+#            - name: Content-Type
+#              value: "application/json"
+          initialDelaySeconds: 9
+          periodSeconds: 15
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: kek
+  namespace: ns-kek
+  labels:
+    name: ns-kek
+spec:
+  ports:
+  - port: 80
+    name: "80"
+    targetPort: 8080
+  selector:
+    app: kek
+  type: ClusterIP
