@@ -1,0 +1,61 @@
+---
+apiVersion: apps/v1
+kind: Namespace
+metadata:
+  name: default
+---
+apiVersion: apps/v1
+kind: Deployment                                  # Type of the kubernetes resource
+metadata:
+  name: kek                    # Name of the Kubernetes resource
+  labels:
+    app: kek
+spec:
+  replicas: 1                                     # Number of pods to run at any given time
+  selector:
+    matchLabels:
+      app: kek                 # This deployment applies to any Pods matching the specified label
+  template:                                       # This deployment will create a set of pods using the configurations in this template
+    metadata:
+      labels:                                     # The labels that will be applied to all of the pods in this deployment
+        app: kek
+    spec:                                         # Spec for the container which will run in the Pod
+      containers:
+      - name: kek
+        image: dbelousov89/kek-repo:latest       # The image we are getting from dockerhub
+        imagePullPolicy: IfNotPresent             # If we have not pulled it before, get it from dockerhub
+        ports:
+        - name: http
+          containerPort: 8090                   # Should match the port number that the Go application listens on
+---
+apiVersion: v1
+kind: Service                                 # Type of the kubernetes resource
+metadata:
+  name: kek                # Name of the Kubernetes resource
+  labels:                                     # Labels that will be applied to the resource
+    app: kek
+spec:
+  type: NodePort                              # Gives each node an external IP that’s accessible from outside the cluster and also opens a Port.
+  selector:
+    app: app               # Selects any Pod with labels `app=fullstack-app-postgres`
+  ports:
+  - name: http
+    port: 8090
+    targetPort: 8080
+
+#kind: Service
+#apiVersion: apps/v1
+#metadata:
+#  name: kek
+#  namespace: ns-kek
+#  labels:
+#    name: kek
+#spec:
+#  ports:
+#  - port: 8080
+#    name: "8080"
+#    targetPort: 8080
+#  selector:
+#    app: kek
+#  type: ClusterIP
+#
